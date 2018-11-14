@@ -83,7 +83,7 @@ HHPC$Weekday<-as.factor(HHPC$Weekday)
 strptime(HHPC$Time,"%H:%M:%S")
 
 #Extract & Create Hour
-HHPC <-cbind(HHPC, min(hms(HHPC$Time)), stringsAsFactors=FALSE)
+HHPC <-cbind(HHPC, hour(hms(HHPC$Time)), stringsAsFactors=FALSE)
 colnames(HHPC)[15] <-"Hour"
 HHPC <- HHPC[,c(ncol(HHPC), 1:(ncol(HHPC)-1))]
 head(HHPC)
