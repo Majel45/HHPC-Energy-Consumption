@@ -197,16 +197,16 @@ GAP_ts_components$seasonal
 autoplot(GAP_ts_components)
 
 Kitchen_ts_components$seasonal
-autoplot(Kitchen_ts_components)
+autoplot(Kitchen_ts_components, main= 'Kitchen: Decomposition of additive time series')
 
 Laundry_Room_ts_components$seasonal
-autoplot(Laundry_Room_ts_components)
+autoplot(Laundry_Room_ts_components, main= 'Laundry Room: Decomposition of additive time series')
 
 Heater_AC_ts_components$seasonal
-autoplot(Heater_AC_ts_components)
+autoplot(Heater_AC_ts_components, main= 'EWH&AC: Decomposition of additive time series')
 
 Other_ts_components$seasonal
-autoplot(Other_ts_components)
+autoplot(Other_ts_components, main= 'Other: Decomposition of additive time series')
 
 ggseasonplot(Laundry_Room_ts_components$trend, polar = T) +
   ylab("") +
@@ -609,6 +609,7 @@ ggplot(HHPCSample5_WHourSat, aes(x="", y=value, fill=variable))+
   coord_polar("y", start = 0)+ labs(x= "", y="Saturday (24) January 2009: Appliance Average")
 
 # 1.13 Forecasting using HoltWinters #### Seasonal gamma=T ####
+#beta=False, exponential smoothing is applied
 GAPforecasts_noSeason <- HoltWinters(GAP_ts, beta=FALSE, gamma=F)
 GAPforecasts_noSeason
 
@@ -648,6 +649,7 @@ Other_forecasts_Season
 # Mean Global Active Power fitted (training the model)
 GAPforecasts_noSeason$fitted
 plot(GAPforecasts_noSeason)
+summary(GAPforecasts_noSeason)
 
 GAPforecasts_Season$fitted
 plot(GAPforecasts_Season)
@@ -681,60 +683,57 @@ Other_forecasts_Season$fitted
 plot(Other_forecasts_Season)
 
 #Sum of squared errors = 2.318598
-GAPforecasts$SSE
+GAPforecasts_noSeason$SSE
+GAPforecasts_Season$SSE
 
-#Forecasting for further time plots
-GAPforecasts2 <- forecast(GAPforecasts, h=1)
-GAPforecasts2
-plot(GAPforecasts2)
+#Forecasting for further time plots #h means no. of periods for forecasting
+#GAP forecasts
+GAPforecasts_noSeason2 <- forecast(GAPforecasts_noSeason, h=1)
+GAPforecasts_noSeason2
+plot(GAPforecasts_noSeason2, main = 'GAP HoltWinters Forecast for 30 days')
+summary(GAPforecasts_noSeason2)
+
+GAPforecasts_Season2 <- forecast(GAPforecasts_Season, h=1)
+GAPforecasts_Season2
+plot(GAPforecasts_Season2)
 
 #Forecasting Kitchen time plots
-Kitchen_forecasts2 <- forecast(Kitchen_forecasts, h=1)
-plot(Kitchen_forecasts2)
+Kitchen_forecasts_noSeason2 <- forecast(Kitchen_forecasts_noSeason, h=1)
+summary(Kitchen_forecasts_noSeason2)
+plot(Kitchen_forecasts_noSeason2, main = 'Kitchen HoltWinters Nonseasonal Forecast for 30 days')
+
+Kitchen_forecasts_Season2 <- forecast(Kitchen_forecasts_Season, h=1)
+summary(Kitchen_forecasts_Season2)
+plot(Kitchen_forecasts_Season2, main = 'Kitchen HoltWinters Seasonal Forecast for 30 days')
 
 #Forecasting Laundry Room time plots
-Laundry_Room_forecasts2 <- forecast(Laundry_Room_forecasts, h=1)
-plot(Laundry_Room_forecasts2)
+LR_forecasts_nonSeason2 <- forecast(LR_forecasts_nonSeason, h=1)
+summary(LR_forecasts_nonSeason2)
+plot(LR_forecasts_nonSeason2, main = 'LR HoltWinters Nonseasonal Forecast for 30 days')
+
+LR_forecasts_Season2 <- forecast(LR_forecasts_Season, h=1)
+summary(LR_forecasts_Season2)
+plot(LR_forecasts_Season2, main = 'LR HoltWinters Seasonal Forecast for 30 days')
 
 #Forecasting Water Heater & AC time plots
-Heater_AC_forecasts2 <- forecast(Heater_AC_forecasts, h=1)
-plot(Heater_AC_forecasts2)
+HAC_forecasts_nonSeason2 <- forecast(HAC_forecasts_nonSeason, h=1)
+summary(HAC_forecasts_nonSeason2)
+plot(HAC_forecasts_nonSeason2, main = 'EWH & AC HoltWinters Nonseasonal Forecast for 30 days')
+
+HAC_forecasts_Season2 <- forecast(HAC_forecasts_Season, h=1)
+summary(HAC_forecasts_Season2)
+plot(HAC_forecasts_Season2, main = 'EWH & AC HoltWinters Seasonal Forecast for 30 days')
 
 #Forecasting Othertime plots
-Other_forecasts2 <- forecast(Other_forecasts, h=1)
-plot(Other_forecasts2)
+Other_forecasts_nonSeason2 <- forecast(Other_forecasts_nonSeason, h=1)
+summary(Other_forecasts_nonSeason2)
+plot(Other_forecasts_nonSeason2, main = 'Other HoltWinters Nonseasonal Forecast for 30 days')
 
-#Holt's exponential smoothing
-GAPforecastsS <- HoltWinters(GAP_ts, gamma=FALSE)
-plot(GAPforecastsS)
+Other_forecasts_Season2 <- forecast(Other_forecasts_Season, h=1)
+summary(Other_forecasts_Season2)
+plot(Other_forecasts_Season2, main = 'Other HoltWinters Seasonal Forecast for 30 days')
 
-Kitchen_forcastS <- HoltWinters(Kitchen_ts, gamma = F)
-plot(Kitchen_forcastS)
-
-Laundry_Room_forcastS <- HoltWinters(Laundry_Room_ts, gamma = F)
-plot(Laundry_Room_forcastS)
-
-Heater_AC_forcastS <- HoltWinters(Heater_AC_ts, gamma = F)
-plot(Heater_AC_forcastS)
-
-Other_forcastS <- HoltWinters(Other_ts, gamma = F)
-plot(Laundry_Room_forcastS)
-
-# GAP forecast's smoothing parameters:
-GAPforecastsS
-Laundry_Room_forcastS
-
-# Smoothing parameters: alpha: 1; beta : 0.2295635; gamma: FALSE
-# Coefficients:[,1] ; a 1.19685447
-
-# GAP forecast sum of squared errors = 2.696654
-GAPforecastsS$SSE
-
-#Forecasting for further time plots
-GAPforecastsS2 <- forecast(GAPforecastsS, h=1)
-plot(GAPforecastsS2)
-
-# 1.14 Forecasting using linear models ####
+# 1.14 Forecasting using linear regression models ####
 GAPforecast_tslm <- tslm(GAP_ts ~ trend + season)
 summary(GAPforecast_tslm)
 GAPforecast_tslm_forecast <- forecast(GAPforecast_tslm, h=1, level = 0.95)
@@ -743,9 +742,88 @@ plot(GAPforecast_tslm_forecast)
 Kitchen_forecast_tslm = tslm(Kitchen_ts ~ trend + season)
 summary(Kitchen_forecast_tslm)
 Kitchen_tslm_forecast <- forecast(Kitchen_forecast_tslm, h=1, level = 0.95)
-plot(Kitchen_forecast_tslm)
+summary(Kitchen_tslm_forecast)
+plot(Kitchen_tslm_forecast, main = 'Kitchen Linear Regression Forecast for 30 days')
 
 Laundry_Room_forecast_tslm = tslm(Laundry_Room_ts ~ trend + season)
 summary(Laundry_Room_forecast_tslm)
 Laundry_Room_tslm_forecast <- forecast(Laundry_Room_forecast_tslm, h=1, level = 0.95)
-plot(Laundry_Room_tslm_forecast)
+summary(Laundry_Room_tslm_forecast)
+plot(Laundry_Room_tslm_forecast,main = 'Laundry Room Linear Regression Forecast for 30 days')
+
+Heater_AC_forecast_tslm = tslm(Heater_AC_ts ~ trend + season)
+summary(Heater_AC_forecast_tslm)
+Heater_AC_tslm_forecast <- forecast(Heater_AC_forecast_tslm, h=1, level = 0.95)
+summary(Heater_AC_tslm_forecast)
+plot(Heater_AC_tslm_forecast,main = 'EWH&AC Linear Regression Forecast for 30 days')
+
+Other_forecast_tslm = tslm(Other_ts ~ trend + season)
+summary(Other_forecast_tslm)
+Other_tslm_forecast <- forecast(Other_forecast_tslm, h=1, level = 0.95)
+summary(Other_tslm_forecast)
+plot(Other_tslm_forecast,main = 'Other Linear Regression Forecast for 30 days')
+
+# 1.15 Forecasting using ARIMA model
+#Kitchen fitting Arima model to seasonal and nonseasonal
+Kitchen_arima_noSeason <- auto.arima(Kitchen_ts, seasonal = F)
+Kitchen_arima_noSeason
+
+Kitchen_arima_Season <- auto.arima(Kitchen_ts, seasonal = T)
+Kitchen_arima_Season
+
+#Kitchen Arima Forecast, h=1 (1 month)
+Kitchen_arima_noSea_fore <- forecast(Kitchen_arima_noSeason, h=1)
+summary(Kitchen_arima_noSea_fore)
+plot(Kitchen_arima_noSea_fore, main = 'Kitchen Arima Nonseasonal Forecast for 30 days')
+
+Kitchen_arima_Sea_fore <- forecast(Kitchen_arima_Season, h=1)
+summary(Kitchen_arima_Sea_fore)
+plot(Kitchen_arima_Sea_fore,  main = 'Kitchen Arima Seasonal Forecast for 30 days')
+
+#Laundry Room fitting Arima model to seasonal and nonseasonal
+LR_arima_noSeason <- auto.arima(Laundry_Room_ts, seasonal = F)
+LR_arima_noSeason
+
+LR_arima_Season <- auto.arima(Laundry_Room_ts, seasonal = T)
+LR_arima_Season
+
+#Laundry Room Arima Forecast, h=1 (1 month)
+LR_arima_noSea_fore <- forecast(LR_arima_noSeason, h=1)
+summary(LR_arima_noSea_fore)
+plot(LR_arima_noSea_fore, main = 'LR Arima Nonseasonal Forecast for 30 days')
+
+LR_arima_Sea_fore <- forecast(LR_arima_Season, h=1)
+summary(LR_arima_Sea_fore)
+plot(LR_arima_Sea_fore,  main = 'LR Arima Seasonal Forecast for 30 days')
+
+#Heater_AC fitting Arima model to seasonal and nonseasonal
+EWH_arima_noSeason <- auto.arima(Heater_AC_ts, seasonal = F)
+EWH_arima_noSeason
+
+EWH_arima_Season <- auto.arima(Heater_AC_ts, seasonal = T)
+EWH_arima_Season
+
+#Heater_AC Arima Forecast, h=1 (1 month)
+EWH_arima_noSea_fore <- forecast(EWH_arima_noSeason, h=1)
+summary(EWH_arima_noSea_fore)
+plot(EWH_arima_noSea_fore, main = 'EWH & AC Arima Nonseasonal Forecast for 30 days')
+
+EWH_arima_Sea_fore <- forecast(EWH_arima_Season, h=1)
+summary(EWH_arima_Sea_fore)
+plot(EWH_arima_Sea_fore,  main = 'EWH & AC Arima Seasonal Forecast for 30 days')
+
+#Other fitting Arima model to seasonal and nonseasonal
+Other_arima_noSeason <- auto.arima(Other_ts, seasonal = F)
+Other_arima_noSeason
+
+Other_arima_Season <- auto.arima(Other_ts, seasonal = T)
+Other_arima_Season
+
+#Other Arima Forecast, h=1 (1 month)
+Other_arima_noSea_fore <- forecast(Other_arima_noSeason, h=1)
+summary(Other_arima_noSea_fore)
+plot(Other_arima_noSea_fore, main = 'Other Arima Nonseasonal Forecast for 30 days')
+
+Other_arima_Sea_fore <- forecast(Other_arima_Season, h=1)
+summary(Other_arima_Sea_fore)
+plot(Other_arima_Sea_fore,  main = 'Other Arima Seasonal Forecast for 30 days')
