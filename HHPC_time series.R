@@ -1,13 +1,9 @@
 # 1.1 Load libraries & Dataset ####
-library(dplyr)
-
-library(tidyr)
+library(tidyverse)
 
 library(doMC)
 
 library(xtable)
-
-library(ggplot2)
 
 library(lubridate)
 
@@ -39,7 +35,7 @@ str(HHPC)
 HHPC$Other <- (HHPC$GAP*1000/60 - 
      HHPC$Kitchen - HHPC$Laundry_Room - HHPC$`Heater_AC`)
 
-#Unit Conversion from Kilowatt per minute to Watt per minute
+#Unit Conversion from Kilowatt per minute to Watt per minute #change to watt per hour
 HHPC$GAP <- ((HHPC$GAP*1000/60))
 HHPC$GRP <- ((HHPC$GRP*1000/60))
 
@@ -51,7 +47,7 @@ HHPC <- na.omit(HHPC)
 HHPC$Date <- as.Date(HHPC$Date,"%d/%m/%Y")
 str(HHPC)
 
-# 1.2 Extract & Create Month ####
+# 1.2 Extract & Create Month #### 
 HHPC <-cbind(HHPC, month(HHPC$Date, label = TRUE, 
        abbr = TRUE), stringsAsFactors=FALSE)
 colnames(HHPC)[11] <-"Month"
@@ -89,7 +85,7 @@ HHPC <- HHPC[,c(ncol(HHPC), 1:(ncol(HHPC)-1))]
 head(HHPC)
 str(HHPC)
 
-#Get Season
+#Get Season #Quarter #Season package research #Night/Day package
 getSeason <- function(DATES) {
   WS <- as.Date("2012-12-15", format = "%Y-%m-%d") # Winter Solstice
   SE <- as.Date("2012-3-15",  format = "%Y-%m-%d") # Spring Equinox
@@ -214,7 +210,7 @@ autoplot(Other_ts_components)
 
 ggseasonplot(Laundry_Room_ts_components$trend, polar = T) +
   ylab("") +
-  ggtitle("")
+  ggtitle("") #change the frequency
 
 # 1.4 Reset main data frame 2008/July ####
 HHPCsml <- HHPCMain 
@@ -512,8 +508,8 @@ head(HHPCSample7_winter)
 HHPCSample7_winter$value <- HHPCSample7_winter$value /sum(HHPCSample7_winter$value)*100
 ggplot(HHPCSample7_winter, aes(x="", y=value, fill=variable))+
   geom_bar(width = 1, stat = "identity")+
-  coord_polar("y", start = 0)+ labs(x= '',
-                                    y="Winter Appliance Average")
+  coord_polar("y", start = 0)+ labs(x= '', y="Winter Appliance Average")
+ # geom_text(aes(y=HHPCSample7_winter$value, label=HHPCSample7_winter$value))
 
 #Spring
 HHPCSample7_spring <- subset(HHPCSample7, HHPCSample7$Season == "Spring")
@@ -527,6 +523,7 @@ HHPCSample7_spring$value <- HHPCSample7_spring$value /sum(HHPCSample7_spring$val
 ggplot(HHPCSample7_spring, aes(x="", y=value, fill=variable))+
   geom_bar(width = 1, stat = "identity")+
   coord_polar("y", start = 0)+ labs(x= '', y="Spring Appliance Average")
+HHPCSample7_spring
 
 #Summer
 HHPCSample7_summer <- subset(HHPCSample7, HHPCSample7$Season == "Summer")
@@ -540,6 +537,7 @@ HHPCSample7_summer$value <- HHPCSample7_summer$value /sum(HHPCSample7_summer$val
 ggplot(HHPCSample7_summer, aes(x="", y=value, fill=variable))+
   geom_bar(width = 1, stat = "identity")+
   coord_polar("y", start = 0)+ labs(x= '', y="Summer Appliance Average")
+HHPCSample7_summer
 
 #Autumn
 HHPCSample7_autumn <- subset(HHPCSample7, HHPCSample7$Season == "Autumn")
@@ -547,13 +545,70 @@ HHPCSample7_autumn = melt(HHPCSample7_autumn, id.vars = c("Season","MeanGAP",
                                                           "MeanGRP", "MeanVolt", "MeanGI")) # melt means to convert columns into rows
 HHPCSample7_autumn <- HHPCSample7_autumn[, -c(1:5)]
 head(HHPCSample7_autumn)
+
 #Percentage out of total
 HHPCSample7_autumn$value <- HHPCSample7_autumn$value /sum(HHPCSample7_autumn$value)*100
 ggplot(HHPCSample7_autumn, aes(x="", y=value, fill=variable))+
   geom_bar(width = 1, stat = "identity")+
   coord_polar("y", start = 0)+ labs(x= '', y="Autumn Appliance Average")
+HHPCSample7_autumn
 
-# 1.12 Forecasting using HoltWinters #### Seasonal gamma=T ####
+# 1.12 Reset main data frame: 2009 Summer Hours of Weekend (Saturday) ####
+HHPCsml <- HHPCMain 
+View(HHPCsml)
+
+#Create Sample dataframe Hours of Saturday/Thursday (2009/07/18 or 23)
+HHPCSample8 <- subset(HHPC, HHPC$Date == "2009-07-23")
+
+#Compressing Data to create Year & Month
+HHPCSample8 <- group_by(HHPCSample8, Hour)
+HHPCSample8
+
+#Reducing dataset by using mean instead of observations
+HHPCSample8 <- summarise(HHPCSample8, MeanGAP = mean(GAP, na.rm = TRUE),
+                         MeanGRP = mean(GRP, na.rm = TRUE),
+                         MeanVolt = mean(Voltage, na.rm = TRUE),
+                         MeanGI = mean(GI, na.rm = TRUE),
+                         MeanKitchen = mean(Kitchen, na.rm = TRUE),
+                         MeanLaundry_Room = mean(Laundry_Room, na.rm = TRUE),
+                         MeanHeater_AC = mean(Heater_AC, na.rm = TRUE),
+                         MeanOther = mean(Other))
+HHPCSample8 <- arrange(HHPCSample8, Hour)
+HHPCSample8
+
+ggplot(HHPCSample8, aes(Hour, group = 1)) + 
+  geom_line(aes(y = MeanKitchen, colour = "MeanKitchen")) + 
+  geom_line(aes(y = MeanLaundry_Room, colour = "MeanLaundry_Room")) +
+  geom_line(aes(y = MeanHeater_AC, colour = "MeanHeater_AC")) +
+  geom_line(aes(y = MeanOther, colour = "MeanOther")) + labs(y= 'Avg Watt/hour',
+  title = 'July 2009 Weekday (Thursday)')
+
+#Pie Chart
+HHPCSample8 <- subset(HHPC, HHPC$Date == "2009-07-18")
+HHPCSample8_WHourSat <- summarise(HHPCSample8, MeanGAP = mean(GAP, na.rm = TRUE),
+                                  MeanGRP = mean(GRP, na.rm = TRUE),
+                                  MeanVolt = mean(Voltage, na.rm = TRUE),
+                                  MeanGI = mean(GI, na.rm = TRUE),
+                                  MeanKitchen = mean(Kitchen, na.rm = TRUE),
+                                  MeanLaundry_Room = mean(Laundry_Room, na.rm = TRUE),
+                                  MeanHeater_AC = mean(Heater_AC, na.rm = TRUE),
+                                  MeanOther = mean(Other))
+head(HHPCSample8_WHourSat)
+HHPCSample5_WHourSat = melt(HHPCSample5_WHourSat, id.vars = c("MeanGAP",
+                                                              "MeanGRP", "MeanVolt", "MeanGI")) # melt means to convert columns into rows
+head(HHPCSample5_WHourSat)
+HHPCSample5_WHourSat <- HHPCSample5_WHourSat[, -c(1:4)]
+
+#Percentage out of total
+HHPCSample5_WHourSat$value <- HHPCSample5_WHourSat$value /sum(HHPCSample5_WHourSat$value)*100
+
+head(HHPCSample5_WHourSat)
+
+ggplot(HHPCSample5_WHourSat, aes(x="", y=value, fill=variable))+
+  geom_bar(width = 1, stat = "identity")+
+  coord_polar("y", start = 0)+ labs(x= "", y="Saturday (24) January 2009: Appliance Average")
+
+# 1.13 Forecasting using HoltWinters #### Seasonal gamma=T ####
 GAPforecasts_noSeason <- HoltWinters(GAP_ts, beta=FALSE, gamma=F)
 GAPforecasts_noSeason
 
@@ -679,7 +734,7 @@ GAPforecastsS$SSE
 GAPforecastsS2 <- forecast(GAPforecastsS, h=1)
 plot(GAPforecastsS2)
 
-# 1.13 Forecasting using linear models ####
+# 1.14 Forecasting using linear models ####
 GAPforecast_tslm <- tslm(GAP_ts ~ trend + season)
 summary(GAPforecast_tslm)
 GAPforecast_tslm_forecast <- forecast(GAPforecast_tslm, h=1, level = 0.95)
